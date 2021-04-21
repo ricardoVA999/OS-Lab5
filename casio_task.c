@@ -1,3 +1,5 @@
+/*Comentarios por Ricardo Valenzuela 18762*/
+
 #include <sys/time.h>
 #include <stdlib.h>
 #include <sched.h>
@@ -11,7 +13,7 @@
 #define LOOP_ITERATIONS_PER_MILLISEC 178250
 //#define LOOP_ITERATIONS_PER_MILLISEC 193750
 
-
+/*Definiciones de tiempo en milisegundos, microsegundos y nanosegundos*/
 #define MILLISEC 	1000
 #define MICROSEC	1000000
 #define NANOSEC 	1000000000
@@ -33,37 +35,44 @@ struct sched_param {
 };
 */
 
+
+/*Definicion de maximos y minimos para el offset, tiempo de ejecucion y min_interval_time, todo esto en segundos*/
 double min_offset,max_offset; //seconds
 double min_exec_time,max_exec_time; //seconds
 double min_inter_arrival_time,max_inter_arrival_time; //seconds
 
+/*se define e lcasio id como 1*/
 unsigned int casio_id,jid=1;
 struct itimerval inter_arrival_time;
 
-
+/*Esta funcion "quema" un milisegundo, es decir que mientras se ejecuta transcurre un milisegundo*/
 void burn_1millisecs() {
 	unsigned long long i;
 	for(i=0; i<LOOP_ITERATIONS_PER_MILLISEC; i++);
 }
 
+/*Esta funcion quema un milisegundo segun la cantidad de milisegundos especificada enteriormente*/
 void burn_cpu(long milliseconds){
 	long i;
 	for(i=0; i<milliseconds; i++)
 		burn_1millisecs();
 }
 
+/*Se limia la variable param, reestableciendola a sus valores iniciales*/
 void clear_sched_param(struct sched_param *param)
 {
 	param->casio_id=-1;
 	param->deadline=0;
 }
+
+/*Se muestra en pantalla el casio id y el deadline*/
 void print_task_param(struct sched_param *param)
 {
     	printf("\npid[%d]\n",param->casio_id);
 	printf("deadline[%llu]\n",param->deadline);
 }
 
-
+/*Se reestablecen los valores de diferentes variables de tiempo*/
 void clear_signal_timer(struct itimerval *t)
 {
 	t->it_interval.tv_sec = 0;
@@ -71,6 +80,8 @@ void clear_signal_timer(struct itimerval *t)
 	t->it_value.tv_sec = 0;
 	t->it_value.tv_usec = 0;
 }
+
+/*Se establecen valores de diferentes variables de tiempo*/
 void set_signal_timer(struct itimerval *t,double secs)
 {
 	t->it_interval.tv_sec = 0;
@@ -79,6 +90,8 @@ void set_signal_timer(struct itimerval *t,double secs)
 	t->it_value.tv_usec = (secs-t->it_value.tv_sec)*MICROSEC;
 	
 }
+
+/*Se muestran en pantalla diferentes variables de tiempo*/
 void print_signal_timer(struct itimerval *t)
 {
 	printf("Interval: secs [%ld] usecs [%ld] Value: secs [%ld] usecs [%ld]\n",
@@ -87,6 +100,8 @@ void print_signal_timer(struct itimerval *t)
 		t->it_value.tv_sec,
 		t->it_value.tv_usec);
 }
+
+/*Se obtiene el valor del tiempo*/
 double get_time_value(double min, double max)
 {
 	if(min==max)
@@ -94,6 +109,7 @@ double get_time_value(double min, double max)
 	return (min + (((double)rand()/RAND_MAX)*(max-min)));
 }
 
+/*Comienza una task, se establecen sus tiempos y sus valores*/
 void start_task(int s)
 {
 	printf("\nTask(%d) has just started\n",casio_id);
@@ -101,6 +117,7 @@ void start_task(int s)
 	setitimer(ITIMER_REAL, &inter_arrival_time, NULL);
 }
 
+/*Se "realiza" un trabajo, aqui se toma el tiempo de inicio y final y se muestran en pantalla*/
 void do_work(int s)
 {
 	signal(SIGALRM, do_work);
@@ -120,12 +137,14 @@ void do_work(int s)
 
 }
 
+/*Termina una task, se indica el id del task finalizado*/
 void end_task(int s)
 {
 	printf("\nTask(%d) has finished\n",casio_id);
 	exit(0);
 }
 
+/*Funcion principal del programa*/
 int main(int argc, char** argv) {
 
 	struct sched_param param;
@@ -137,6 +156,7 @@ int main(int argc, char** argv) {
 	
 	clear_sched_param(&param);
 
+	/*Asignaccion de valores para diferentes variables a utilizar*/
 	param.sched_priority = 1;
 	
 	casio_id=param.casio_id=atoi(argv[1]);
