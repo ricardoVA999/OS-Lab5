@@ -1,4 +1,4 @@
-
+/*Comentarios por Ricardo Valenzuela 18762*/
 #include <sys/time.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -12,7 +12,7 @@
 #define  BUF_LEN			200
 #define  CASIO_TASKS_NUM		20	
 
-
+/*Configuracion de los tasks, contiene identificador, tiempos maximos y minomos de ejecucion, y mas*/
 struct casio_tasks_config {
 	int pid;
 	double min_exec;
@@ -27,15 +27,18 @@ struct casio_tasks_config {
 pid_t casio_tasks_pid [CASIO_TASKS_NUM];
 int casio_tasks_num=0;
 
+/*Obtiene un valor numerico de un string*/
 int get_int_val (char* str) 
 {
 	char* s = str;
 	int val;
 	for (s = str;*s!='\t';s++);
 	*s='\0';
-	val=atoi(str);
+	val=atoi(str); /*Parsea un valor de tipo str e interpreta su contenido como un numero entero, devuelve un valor de tipo int*/
 	return val;
 }
+
+/*Funcion que imprime la configuracion de los tasks, esto lo hace por cada task existente*/
 void print_casio_tasks_config(struct casio_tasks_config *tasks, int num)
 {
 	int i;
@@ -55,6 +58,7 @@ void print_casio_tasks_config(struct casio_tasks_config *tasks, int num)
 	}
 }
 
+/*Funcion que limpia configuracion de los tasks, esto lo hace por cada task existente*/
 void clear_casio_tasks_config_info(struct casio_tasks_config *tasks, int num)
 {
 	int i;
@@ -70,6 +74,8 @@ void clear_casio_tasks_config_info(struct casio_tasks_config *tasks, int num)
 		tasks[i].max_offset=0;
 	}
 }
+
+/*Obtiene la confirguraccion de un task en especifico*/
 void get_casio_task_config_info(char * str, struct casio_tasks_config *tasks,int *n)
 {
 	char *s ,*s1;
@@ -124,6 +130,7 @@ void get_casio_task_config_info(char * str, struct casio_tasks_config *tasks,int
 	(*n)++;	
 }
 
+/*Obtiene la configuracion de todas las tasks, utiliza la funcion get_casio_task_config_info*/
 void get_casio_tasks_config_info(char *file, int *duration, struct casio_tasks_config *tasks,int *n)
 {
 	char buffer[BUF_LEN];
@@ -148,7 +155,7 @@ void get_casio_tasks_config_info(char *file, int *duration, struct casio_tasks_c
 	
 }
 
-
+/*Funcion que indica el inicio la simulacion*/
 void start_simulation()
 {
 	int i;
@@ -158,6 +165,7 @@ void start_simulation()
 	}
 	
 }
+/*Funcion que indica el final de la simulacion*/
 void end_simulation(int signal)
 {
 	int i;
@@ -167,17 +175,21 @@ void end_simulation(int signal)
 	}
 	
 }
+
+/*Funcion que brinda un poco de informacion de la simulacion*/
 void help(char* name)
 {
 	fprintf(stderr, "Usage: %s file_name (system configuration)\n",	name);
 	exit(0);
 }
+
+/*Main*/
 int main(int argc, char *argv[])
 {
 	
 	int duration,i,j,k,n;
 	struct casio_tasks_config casio_tasks_config[CASIO_TASKS_NUM];
-	struct itimerval sim_time;
+	struct itimerval sim_time; /*Itimerval es una estructura que permite guardar intervalos de tiempo*/
 	char arg[CASIO_TASKS_NUM][BUF_LEN],*parg[CASIO_TASKS_NUM];
 	
 	srand(time(NULL));
@@ -199,7 +211,7 @@ int main(int argc, char *argv[])
 	signal(SIGALRM, end_simulation);
 	setitimer(ITIMER_REAL, &sim_time, NULL);	
 
-
+	/*Este for brinda la informacion de los casio_tasks en caso de existir alguno*/
 	for(i=0;i<casio_tasks_num;i++){
 		strcpy(arg[0],"casio_task");	
 				
@@ -220,6 +232,7 @@ int main(int argc, char *argv[])
 		parg[k]=NULL;
 		
 		casio_tasks_pid[i]=fork();
+		/*Imprime error si el id de la casio_task es 0, esto nos indica que no hay casio_tasks*/
 		if(casio_tasks_pid[i]==0){
 			execv("./casio_task",parg);
 			perror("Error: execv\n");
